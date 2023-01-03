@@ -11,18 +11,74 @@ const users = [];
 
 function checksExistsUserAccount(request, response, next) {
   // Complete aqui
+  const { username } = request.headers;
+
+  const user = users.find(user => user.username === username);
+
+  if (!user) {
+    return response.status(404).json({Erro: "User does not exist"})
+  }
+
+  request.user = user;
+
+  return next()
+
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
   // Complete aqui
+  const { user } = request
+
+  if(!user.pro && user.todos.length > 9 ){
+      return response.status(400).json({"Error": "User is not pro"})
+  }
+
+  return next()
+
 }
 
 function checksTodoExists(request, response, next) {
   // Complete aqui
+  const { username } = request.headers
+  const { id: idTodo } = request.params
+
+  const isValid = validate(idTodo)
+
+  if (!isValid) {
+    return response.status(400).json({Error: "Id not valid"})
+  }
+
+  const user = users.find(user => user.username === username)
+  
+  if(!user) {
+    return response.status(400).json({Erro: "User not valid"})
+  }
+
+  const todo = user.todos.find(todo => todo.id === idTodo)
+
+  if (!todo) {
+    return response.status(400).json({Error: "Todo not found"})
+  }
+
+  request.todo = todo
+
+  return next()
+
 }
 
 function findUserById(request, response, next) {
   // Complete aqui
+  const { id } = request.params
+
+  const user = users.find(user => user.id === id);
+
+  if (!user) {
+    return response.status(404).json({Erro: "User does not exist"})
+  }
+
+  request.user = user
+
+  return next()
 }
 
 app.post('/users', (request, response) => {
@@ -50,6 +106,8 @@ app.post('/users', (request, response) => {
 app.get('/users/:id', findUserById, (request, response) => {
   const { user } = request;
 
+  console.log("user", user)
+
   return response.json(user);
 });
 
@@ -67,7 +125,7 @@ app.patch('/users/:id/pro', findUserById, (request, response) => {
 
 app.get('/todos', checksExistsUserAccount, (request, response) => {
   const { user } = request;
-
+  
   return response.json(user.todos);
 });
 

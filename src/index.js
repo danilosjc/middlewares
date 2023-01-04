@@ -30,11 +30,9 @@ function checksCreateTodosUserAvailability(request, response, next) {
   const { user } = request
 
   if(!user.pro && user.todos.length > 9 ){
-      return response.status(400).json({"Error": "User is not pro"})
+      return response.status(403).json({"Error": "User is not pro"})
   }
-
   return next()
-
 }
 
 function checksTodoExists(request, response, next) {
@@ -51,16 +49,17 @@ function checksTodoExists(request, response, next) {
   const user = users.find(user => user.username === username)
   
   if(!user) {
-    return response.status(400).json({Erro: "User not valid"})
+    return response.status(404).json({Erro: "User not valid"})
   }
 
   const todo = user.todos.find(todo => todo.id === idTodo)
 
   if (!todo) {
-    return response.status(400).json({Error: "Todo not found"})
+    return response.status(404).json({Error: "Todo not found"})
   }
 
   request.todo = todo
+  request.user = user
 
   return next()
 
